@@ -3,7 +3,7 @@ public class Partitioner {
     public static class LastAccessDateMapper extends Mapper<Object, Text, IntWritable, Text> {
         // This object will format the creation date string into a Date object
         private final static SimpleDateFormat frmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        private IntWritableout key = new IntWritable();
+        private IntWritable outkey = new IntWritable();
 
         protected void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             Map<String, String> parsed = MRDPUtils.transformXmlToMap(value.toString());
@@ -24,8 +24,9 @@ public class Partitioner {
 
         private int minLastAccessDateYear = 0;
 
-        public intgetPartition(IntWritable key, Text value, int numPartitions) { 
-            return key.get() -minLastAccessDateYear; }
+        public int getPartition(IntWritable key, Text value, int numPartitions) {
+            return key.get() - minLastAccessDateYear;
+        }
 
         public Configuration getConf() {
             return conf;

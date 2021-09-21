@@ -8,7 +8,7 @@ public class TopTen {
             String userId = parsed.get("Id");
             String reputation = parsed.get("Reputation");
             // Add this record to our map with the reputation as the key
-            repToRecordMap.put(Integer.parseInt(reputation), new Text(value));
+            repToRecordMap.put(Integer.parseInt(reputation), new Text(userId));
             // If we have more than ten records, remove the one with the lowest rep
             // As this tree map is sorted in descending order, the user with
             // the lowest reputation is the last key.

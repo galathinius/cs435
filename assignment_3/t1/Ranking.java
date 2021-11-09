@@ -12,6 +12,9 @@ import java.util.regex.Pattern;
 
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
 import org.apache.spark.mllib.linalg.distributed.CoordinateMatrix;
+import org.apache.spark.mllib.linalg.distributed.IndexedRow;
+import org.apache.spark.mllib.linalg.Vectors;
+import org.apache.spark.mllib.linalg.Vector;
 
 public class Ranking {
   private static final Pattern SPACE = Pattern.compile(" ");
@@ -28,35 +31,32 @@ public class Ranking {
     JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
     long lineCount = lines.count(); // for v0
 
-    JavaPairRDD<String, String> words = lines.flatMapToPair(s -> {
+    JavaRDD<IndexedRow> rows = lines.map(s -> {
       // System.out.println(" !!!!!!!!!");
       String[] keyAndNeighbors = s.split(": ");
       String node = keyAndNeighbors[0];
       String[] neighbors = keyAndNeighbors[1].split(" ");
-
-      ArrayList<Tuple2<String, String>> thePairs = new ArrayList<>();
-      for (String v : neighbors) {
-        thePairs.add(new Tuple2<>(node, v));
-
+      int k = neighbors.length;
+      int[] neighbors_arrayList = new int[k];
+      double[] p = new double[k];
+      int i = 0;
+      for (String c : neighbors) {
+        neighbors_arrayList[i] = Integer.parseInt(c);
+        p[i] = (1.0 / k);
+        i++;
       }
+      int line_Count = (int) lineCount;
+      Integer index = Integer.parseInt(node);
+      Vector v = Vectors.sparse(line_Count, neighbors_arrayList, p);
+      IndexedRow row = new IndexedRow(index, v);
+      return row;
 
-      Iterator<Tuple2<String, String>> iterator = thePairs.iterator();
-
-      return iterator;
-
-      // ArrayList <String> neighbors1 = new ArrayList(neighbors);
-
-      // int neighboursCount = neighbors.length;
-
-      // JavaRDD<MatrixEntry> maybe?
-
-      // return neighbors;
     });
 
     // CoordinateMatrix adjMatrix = new CoordinateMatrix(words, lineCount,
     // lineCount);
 
-    words.saveAsTextFile(args[1]); // doesnt work of course
+    rows.saveAsTextFile(args[1]); // doesnt work of course
     // System.out.println(lineCount);
     // System.out.println(words.toString());
     // words.show();

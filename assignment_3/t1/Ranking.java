@@ -5,7 +5,9 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.SparkSession;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import org.apache.spark.mllib.linalg.distributed.MatrixEntry;
@@ -15,7 +17,7 @@ public class Ranking {
   private static final Pattern SPACE = Pattern.compile(" ");
 
   public static void main(String[] args) throws Exception {
-
+    ArrayList<ArrayList<Integer>> M = new ArrayList();
     if (args.length < 2) {
       System.err.println("Usage: Ranking input output");
       System.exit(1);
@@ -26,23 +28,41 @@ public class Ranking {
     JavaRDD<String> lines = spark.read().textFile(args[0]).javaRDD();
     long lineCount = lines.count(); // for v0
 
-    JavaRDD<MatrixEntry> words = lines.flatMap(s -> {
-
+    JavaPairRDD<String, String> words = lines.flatMapToPair(s -> {
+      // System.out.println(" !!!!!!!!!");
       String[] keyAndNeighbors = s.split(": ");
+      String node = keyAndNeighbors[0];
       String[] neighbors = keyAndNeighbors[1].split(" ");
-      int neighboursCount = neighbors.length;
 
-      // MatrixEntry[] maybe?
-      JavaRDD<MatrixEntry> neighboursAsMatrixE = neighbors
-          .map(n -> MatrixEntry(Integer.parseInt(keyAndNeighbors[0]), Integer.parseInt(n), 1 / neighboursCount));
+      ArrayList<Tuple2<String, String>> thePairs = new ArrayList<>();
+      for (String v : neighbors) {
+        thePairs.add(new Tuple2<>(node, v));
 
-      return neighboursAsMatrixE;
+      }
+
+      Iterator<Tuple2<String, String>> iterator = thePairs.iterator();
+
+      return iterator;
+
+      // ArrayList <String> neighbors1 = new ArrayList(neighbors);
+
+      // int neighboursCount = neighbors.length;
+
+      // JavaRDD<MatrixEntry> maybe?
+
+      // return neighbors;
     });
 
-    CoordinateMatrix adjMatrix = new CoordinateMatrix(words, lineCount, lineCount);
+    // CoordinateMatrix adjMatrix = new CoordinateMatrix(words, lineCount,
+    // lineCount);
 
-    adjMatrix.saveAsTextFile(args[1]); // doesnt work of course
+    words.saveAsTextFile(args[1]); // doesnt work of course
     // System.out.println(lineCount);
+    // System.out.println(words.toString());
+    // words.show();
+
+    // words.map(s -> System.out.prints);
+
     spark.stop();
   }
 }

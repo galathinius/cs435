@@ -72,3 +72,9 @@ public class Ranking {
 
 // $SPARK_HOME/bin/spark-submit --class Ranking --deploy-mode client --supervise
 // target/simple-project-1.0.jar /input /outR
+
+// IndexedRow(1,(5,[2,4],[0.5,0.5]))
+// IndexedRow(2,(5,[5],[1.0]))
+// IndexedRow(3,(5,[2],[1.0]))
+// IndexedRow(4,(5,[3],[1.0]))
+// IndexedRow(5,(5,[1],[1.0]))
